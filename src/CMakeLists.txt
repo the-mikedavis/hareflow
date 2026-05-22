@@ -27,7 +27,7 @@ target_compile_definitions(hareflow
         $<$<PLATFORM_ID:Windows>:_WIN32_WINNT=0x603>
         HAREFLOW_EXPORTS
 )
-target_compile_features(hareflow PUBLIC cxx_std_17)
+target_compile_features(hareflow PUBLIC cxx_std_20)
 target_compile_options(hareflow PUBLIC $<$<CXX_COMPILER_ID:MSVC>:/wd4251>)
 
 install(TARGETS hareflow
