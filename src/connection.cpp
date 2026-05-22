@@ -4,6 +4,8 @@
 #include "hareflow/io_context_holder.h"
 #include "hareflow/logging.h"
 
+#include <boost/version.hpp>
+
 namespace {
 
 const std::uint8_t MAX_POOL_SIZE = 32;
