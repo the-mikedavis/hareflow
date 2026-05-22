@@ -80,4 +80,4 @@ int main()
 ## Installation
 Hareflow is integrated to vcpkg and it is highly suggested to use it to build and install the library: <https://vcpkg.io/en/package/hareflow>
 
-Hareflow supports GCC, Clang, and MSVC, and requires a compiler with support for C++17 features.
+Hareflow supports GCC, Clang, and MSVC, and requires a compiler with support for C++20 features.

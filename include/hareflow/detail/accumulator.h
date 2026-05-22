@@ -5,6 +5,7 @@
 #include <mutex>
 #include <chrono>
 #include <condition_variable>
+#include <stdexcept>
 #include <vector>
 
 #include "hareflow/detail/internal_types.h"

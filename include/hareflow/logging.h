@@ -67,7 +67,7 @@ private:
         {
             std::shared_lock lock(m_mutex);
             if (m_handler && level >= m_level) {
-                m_handler(level, fmt::format(format, std::forward<Args>(args)...));
+                m_handler(level, fmt::vformat(format, fmt::make_format_args(args...)));
             }
         }
 

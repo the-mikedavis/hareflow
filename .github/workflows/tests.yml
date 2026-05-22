@@ -19,10 +19,10 @@ jobs:
             os: windows-latest
             compiler: cl.exe
           - key: linux-gcc
-            os: ubuntu-20.04
+            os: ubuntu-24.04
             compiler: g++
           - key: linux-clang
-            os: ubuntu-20.04
+            os: ubuntu-24.04
             compiler: clang++
     runs-on: ${{ matrix.os }}
 
@@ -46,7 +46,7 @@ jobs:
           path: .cache
           key: vcpkg-${{ matrix.key }}-${{ hashFiles('**/vcpkg.json', '**/vcpkg-configuration.json') }}
       - name: Install apt dependencies
-        if: matrix.os == 'ubuntu-20.04'
+        if: matrix.os == 'ubuntu-24.04'
         run: |
           sudo apt-get update && sudo apt-get install -y clang build-essential libssl-dev curl ninja-build
       - name: Build Tests
