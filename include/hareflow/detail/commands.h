@@ -419,9 +419,18 @@ public:
         std::uint32_t m_reserved;
     };
 
+    explicit DeliverCommand(std::uint16_t version) : m_version{version}
+    {
+    }
+
     std::uint8_t get_subscription_id() const
     {
         return m_subscription_id;
+    }
+
+    std::optional<std::uint64_t> get_committed_chunk_id() const
+    {
+        return m_committed_chunk_id;
     }
 
     const Chunk& get_chunk() const
@@ -448,7 +457,9 @@ protected:
     void read_body(BinaryBuffer& buffer) override;
 
 protected:
+    std::uint16_t                          m_version;
     std::uint8_t                           m_subscription_id;
+    std::optional<std::uint64_t>           m_committed_chunk_id;
     Chunk                                  m_chunk;
     BinaryBuffer                           m_data;
     std::vector<boost::asio::const_buffer> m_messages;

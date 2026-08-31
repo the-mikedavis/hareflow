@@ -16,7 +16,7 @@ namespace {
 // Versions of broker-initiated commands that we can parse.
 // Min and max are assumed to be 1 unless specified in this list.
 const std::vector<hareflow::detail::CommandVersion> SUPPORTED_COMMAND_VERSIONS{
-    {static_cast<std::uint16_t>(hareflow::detail::CommandKey::Deliver), 1, 1},  // FUTURE: switch max to 2 once deliver v2 is supported.
+    {static_cast<std::uint16_t>(hareflow::detail::CommandKey::Deliver), 1, 2},
 };
 
 hareflow::detail::CommandVersion supported_versions(std::uint16_t key)
@@ -562,7 +562,7 @@ void ClientImpl::handle_deliver(std::uint16_t version, BinaryBuffer& buffer)
         return;
     }
 
-    DeliverCommand command;
+    DeliverCommand command{version};
     command.deserialize(buffer);
     std::uint8_t                 subscription_id = command.get_subscription_id();
     const DeliverCommand::Chunk& chunk           = command.get_chunk();
