@@ -6,6 +6,7 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <vector>
@@ -37,10 +38,21 @@ using CodecPtr       = std::shared_ptr<Codec>;
 
 using Properties = std::map<std::string, std::string>;
 
+struct ChunkContext {
+    std::uint8_t  subscription_id;
+    std::int64_t  timestamp;
+    std::uint64_t offset;         // offset of the first message of the chunk
+    std::uint32_t message_count;  // number of messages in the chunk
+    // Offset of the first message of the last chunk replicated to a quorum of the stream's members. Absent when the broker does not support version 2
+    // of the `deliver` command.
+    std::optional<std::uint64_t> committed_chunk_id;
+};
+
 struct MessageContext {
     std::uint64_t offset;
     std::int64_t  timestamp;
     Consumer*     consumer;
+    std::optional<std::uint64_t> committed_chunk_id;
 };
 
 class Message

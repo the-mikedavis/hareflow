@@ -137,7 +137,7 @@ InternalClientPtr ConsumerImpl::get_client(InternalEnvironmentPtr environment)
     namespace ph = std::placeholders;
 
     ClientParameters parameters = environment->get_base_client_parameters()
-                                      .with_message_listener(std::bind(&ConsumerImpl::handle_message, this, ph::_2, ph::_3, ph::_4))
+                                      .with_message_listener(std::bind(&ConsumerImpl::handle_message, this, ph::_1, ph::_2, ph::_3))
                                       .with_metadata_listener(std::bind(&ConsumerImpl::handle_metadata_update, this, ph::_1))
                                       .with_shutdown_listener(std::bind(&ConsumerImpl::handle_shutdown, this, ph::_1));
 
@@ -199,7 +199,7 @@ void ConsumerImpl::internal_store_offset(std::uint64_t offset)
     }
 }
 
-void ConsumerImpl::handle_message(std::int64_t timestamp, std::uint64_t offset, MessagePtr message)
+void ConsumerImpl::handle_message(const ChunkContext& chunk_context, std::uint64_t offset, MessagePtr message)
 {
     bool store_offset = false;
     {
@@ -217,7 +217,7 @@ void ConsumerImpl::handle_message(std::int64_t timestamp, std::uint64_t offset, 
     }
 
     if (m_message_handler) {
-        m_message_handler(MessageContext{offset, timestamp, this}, std::move(message));
+        m_message_handler(MessageContext{offset, chunk_context.timestamp, this, chunk_context.committed_chunk_id}, std::move(message));
     }
 
     if (store_offset) {

@@ -564,10 +564,10 @@ void ClientImpl::handle_deliver(std::uint16_t version, BinaryBuffer& buffer)
 
     DeliverCommand command{version};
     command.deserialize(buffer);
-    std::uint8_t                 subscription_id = command.get_subscription_id();
-    const DeliverCommand::Chunk& chunk           = command.get_chunk();
+    const DeliverCommand::Chunk& chunk = command.get_chunk();
+    ChunkContext chunk_context{command.get_subscription_id(), chunk.m_timestamp, chunk.m_offset, chunk.m_nb_entries, command.get_committed_chunk_id()};
     if (m_chunk_listener) {
-        m_chunk_listener(*this, subscription_id, chunk.m_timestamp, chunk.m_offset, chunk.m_nb_entries);
+        m_chunk_listener(*this, chunk_context);
     }
     if (!m_message_listener) {
         return;
@@ -576,7 +576,7 @@ void ClientImpl::handle_deliver(std::uint16_t version, BinaryBuffer& buffer)
     std::uint64_t message_offset = chunk.m_offset;
     for (const auto& encoded_message : command.get_messages()) {
         MessagePtr message = m_codec->decode(encoded_message.data(), encoded_message.size());
-        m_message_listener(subscription_id, chunk.m_timestamp, message_offset, message);
+        m_message_listener(chunk_context, message_offset, message);
         ++message_offset;
     }
 }
