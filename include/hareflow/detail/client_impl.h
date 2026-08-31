@@ -69,15 +69,15 @@ private:
     std::future<void>                                             send_frame(const Serializable& frame);
 
     void                                 handle_frames();
-    template<typename ResponseType> void handle_response(BinaryBuffer& buffer);
-    void                                 handle_close(BinaryBuffer& buffer);
-    void                                 handle_deliver(BinaryBuffer& buffer);
-    void                                 handle_publish_confirm(BinaryBuffer& buffer);
-    void                                 handle_publish_error(BinaryBuffer& buffer);
-    void                                 handle_tune(BinaryBuffer& buffer);
-    void                                 handle_metadata_update(BinaryBuffer& buffer);
-    void                                 handle_credit(BinaryBuffer& buffer);
-    void                                 handle_heartbeat(BinaryBuffer& buffer);
+    template<typename ResponseType> void handle_response(std::uint16_t version, BinaryBuffer& buffer);
+    void                                 handle_close(std::uint16_t version, BinaryBuffer& buffer);
+    void                                 handle_deliver(std::uint16_t version, BinaryBuffer& buffer);
+    void                                 handle_publish_confirm(std::uint16_t version, BinaryBuffer& buffer);
+    void                                 handle_publish_error(std::uint16_t version, BinaryBuffer& buffer);
+    void                                 handle_tune(std::uint16_t version, BinaryBuffer& buffer);
+    void                                 handle_metadata_update(std::uint16_t version, BinaryBuffer& buffer);
+    void                                 handle_credit(std::uint16_t version, BinaryBuffer& buffer);
+    void                                 handle_heartbeat(std::uint16_t version, BinaryBuffer& buffer);
 
     std::shared_ptr<Connection> m_connection;
 
@@ -108,7 +108,7 @@ private:
 
     std::thread m_frame_handling_thread;
 
-    using HandlerFunc = void (ClientImpl::*)(BinaryBuffer&);
+    using HandlerFunc = void (ClientImpl::*)(std::uint16_t, BinaryBuffer&);
     static const std::map<CommandKey, HandlerFunc> FRAME_HANDLERS;
 };
 

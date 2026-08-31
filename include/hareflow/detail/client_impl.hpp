@@ -32,7 +32,7 @@ template<typename ResponseType> std::unique_ptr<ResponseType> ClientImpl::send_r
     return std::unique_ptr<ResponseType>(cast_response);
 }
 
-template<typename ResponseType> void ClientImpl::handle_response(BinaryBuffer& buffer)
+template<typename ResponseType> void ClientImpl::handle_response(std::uint16_t /*version*/, BinaryBuffer& buffer)
 {
     auto response = std::make_unique<ResponseType>();
     response->deserialize(buffer);

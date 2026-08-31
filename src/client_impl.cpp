@@ -507,12 +507,12 @@ void ClientImpl::handle_frames()
 
             if (m_status.load() != Status::Stopping) {
                 if (auto it = FRAME_HANDLERS.find(static_cast<CommandKey>(key)); it != FRAME_HANDLERS.end()) {
-                    std::invoke(it->second, this, buffer);
+                    std::invoke(it->second, this, version, buffer);
                 } else {
                     throw StreamException(fmt::format("Unsupported command {:#04x}", key));
                 }
             } else if (is_response && static_cast<CommandKey>(key) == CommandKey::Close) {
-                handle_response<GenericResponse>(buffer);
+                handle_response<GenericResponse>(version, buffer);
                 shutdown_reason = ShutdownReason::ClientInitiated;
                 break;
             } else {
@@ -545,7 +545,7 @@ void ClientImpl::handle_frames()
     }
 }
 
-void ClientImpl::handle_close(BinaryBuffer& buffer)
+void ClientImpl::handle_close(std::uint16_t /*version*/, BinaryBuffer& buffer)
 {
     ServerCloseRequest request;
     request.deserialize(buffer);
@@ -556,7 +556,7 @@ void ClientImpl::handle_close(BinaryBuffer& buffer)
     throw ServerCloseException("Server requested close");
 }
 
-void ClientImpl::handle_deliver(BinaryBuffer& buffer)
+void ClientImpl::handle_deliver(std::uint16_t version, BinaryBuffer& buffer)
 {
     if (!m_chunk_listener && !m_message_listener) {
         return;
@@ -581,7 +581,7 @@ void ClientImpl::handle_deliver(BinaryBuffer& buffer)
     }
 }
 
-void ClientImpl::handle_publish_confirm(BinaryBuffer& buffer)
+void ClientImpl::handle_publish_confirm(std::uint16_t /*version*/, BinaryBuffer& buffer)
 {
     if (!m_publish_confirm_listener) {
         return;
@@ -596,7 +596,7 @@ void ClientImpl::handle_publish_confirm(BinaryBuffer& buffer)
     }
 }
 
-void ClientImpl::handle_publish_error(BinaryBuffer& buffer)
+void ClientImpl::handle_publish_error(std::uint16_t /*version*/, BinaryBuffer& buffer)
 {
     if (!m_publish_error_listener) {
         return;
@@ -611,7 +611,7 @@ void ClientImpl::handle_publish_error(BinaryBuffer& buffer)
     }
 }
 
-void ClientImpl::handle_tune(BinaryBuffer& buffer)
+void ClientImpl::handle_tune(std::uint16_t /*version*/, BinaryBuffer& buffer)
 {
     ServerTuneCommand command;
     command.deserialize(buffer);
@@ -639,7 +639,7 @@ void ClientImpl::handle_tune(BinaryBuffer& buffer)
     m_tune_promise.set_value();
 }
 
-void ClientImpl::handle_metadata_update(BinaryBuffer& buffer)
+void ClientImpl::handle_metadata_update(std::uint16_t /*version*/, BinaryBuffer& buffer)
 {
     MetadataUpdateCommand command;
     command.deserialize(buffer);
@@ -653,7 +653,7 @@ void ClientImpl::handle_metadata_update(BinaryBuffer& buffer)
     }
 }
 
-void ClientImpl::handle_credit(BinaryBuffer& buffer)
+void ClientImpl::handle_credit(std::uint16_t /*version*/, BinaryBuffer& buffer)
 {
     if (!m_credit_error_listener) {
         return;
@@ -665,7 +665,7 @@ void ClientImpl::handle_credit(BinaryBuffer& buffer)
     m_credit_error_listener(command.get_subscription_id(), command.get_response_code());
 }
 
-void ClientImpl::handle_heartbeat(BinaryBuffer& /*buffer*/)
+void ClientImpl::handle_heartbeat(std::uint16_t /*version*/, BinaryBuffer& /*buffer*/)
 {
     // Nothing to do, server idle timer already reset
 }
