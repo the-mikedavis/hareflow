@@ -2,6 +2,17 @@
 
 namespace hareflow::detail {
 
+namespace {
+
+std::pair<std::string, std::string> read_property(BinaryBuffer& buffer)
+{
+    std::string key{buffer.read_string()};
+    std::string value{buffer.read_string()};
+    return {std::move(key), std::move(value)};
+}
+
+}  // namespace
+
 const std::size_t PublishCommand::BASE_SERIALIZED_SIZE = PublishCommand(0, {}).serialized_size();
 
 std::size_t ClientCommand::header_size() const
@@ -302,7 +313,7 @@ void PeerPropertiesRequest::write_body(BinaryBuffer& buffer) const
 void PeerPropertiesResponse::read_body(BinaryBuffer& buffer)
 {
     m_response_code = buffer.read_ushort();
-    buffer.read_array(m_properties, [](auto& buffer) { return std::make_pair(std::string(buffer.read_string()), std::string(buffer.read_string())); });
+    buffer.read_array(m_properties, [](auto& buffer) { return read_property(buffer); });
 }
 
 std::size_t SaslHandshakeRequest::body_size() const
@@ -372,8 +383,7 @@ void OpenRequest::write_body(BinaryBuffer& buffer) const
 void OpenResponse::read_body(BinaryBuffer& buffer)
 {
     m_response_code = buffer.read_ushort();
-    buffer.read_array(m_connection_properties,
-                      [](auto& buffer) { return std::make_pair(std::string(buffer.read_string()), std::string(buffer.read_string())); });
+    buffer.read_array(m_connection_properties, [](auto& buffer) { return read_property(buffer); });
 }
 
 std::size_t ClientCloseRequest::body_size() const
@@ -416,6 +426,33 @@ void ClientHeartbeatCommand::write_body(BinaryBuffer& /*buffer*/) const
 void GenericResponse::read_body(BinaryBuffer& buffer)
 {
     m_response_code = buffer.read_ushort();
+}
+
+std::size_t ExchangeCommandVersionsRequest::body_size() const
+{
+    return BinaryBuffer::serialized_size(m_command_versions,
+                                         [](const auto& elem) { return sizeof(elem.m_key) + sizeof(elem.m_min_version) + sizeof(elem.m_max_version); });
+}
+
+void ExchangeCommandVersionsRequest::write_body(BinaryBuffer& buffer) const
+{
+    buffer.write_array(m_command_versions, [](auto& buffer, const auto& elem) {
+        buffer.write_ushort(elem.m_key);
+        buffer.write_ushort(elem.m_min_version);
+        buffer.write_ushort(elem.m_max_version);
+    });
+}
+
+void ExchangeCommandVersionsResponse::read_body(BinaryBuffer& buffer)
+{
+    m_response_code = buffer.read_ushort();
+    buffer.read_array(m_command_versions, [](auto& buffer) {
+        CommandVersion command_version;
+        command_version.m_key         = buffer.read_ushort();
+        command_version.m_min_version = buffer.read_ushort();
+        command_version.m_max_version = buffer.read_ushort();
+        return command_version;
+    });
 }
 
 }  // namespace hareflow::detail
